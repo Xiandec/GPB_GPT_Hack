@@ -1,8 +1,19 @@
 import requests
 from helper.config import Config
 from neirwork.data.system_conf import SYS_MSG
+import json
 
-class DeepinfraController():
+class Singleton(object):
+    """
+    Singleton class
+    """
+    _instance = None
+    def __new__(class_, *args, **kwargs):
+        if not isinstance(class_._instance, class_):
+            class_._instance = object.__new__(class_, *args, **kwargs)
+        return class_._instance
+
+class DeepinfraController(Singleton):
     """
     Контроллер для работы с API Deepinfra
     """
@@ -32,6 +43,20 @@ class DeepinfraController():
         request['stream'] = self._stream
         return request
     
+    def get_responce(self, **kwargs) -> str:
+        """
+        Возвращает ответ от нейронной сети
+        """
+        if 'proxies' in kwargs.keys():
+            proxies = kwargs['proxies']
+            response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self.create_json_data(), proxies=proxies)
+            try:
+                resp_text = ''.join([json.loads(i)['choices'][0]['delta']['content'] for i in response.text.split('data: ') if i != '' and not '[DONE]' in i and 'content' in json.loads(i)['choices'][0]['delta'].keys()])
+                self.add_message(resp_text, 'assistant')
+                return resp_text
+            except BaseException:
+                return 'Ошибка'
+
     def add_message(
             self, 
             message: str = None, 
@@ -52,4 +77,12 @@ class DeepinfraController():
             }
             self._messages.append(message_dict)
         return
-            
+    
+    def clear_messages(self, ) -> None:
+        """
+        Очищает контекст
+        """
+        self._model = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
+        self._messages = []
+        self._stream = True
+        self._get_system_info()

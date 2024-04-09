@@ -1,9 +1,16 @@
+print('123')
 from neirwork.proxy_controller import AvalibleProxies
 from neirwork.controller import DeepinfraController
+import telegram_bot.bot 
 import requests
 import json
 
 if __name__ == '__main__':
+    print('start bot')
+    pr = AvalibleProxies()
+    print('start proxy')
+    telegram_bot.bot.main()
+    """
     print('start proxy')
     pr = AvalibleProxies()
     nc = DeepinfraController()
@@ -23,3 +30,4 @@ if __name__ == '__main__':
     resp_text = ''.join([json.loads(i)['choices'][0]['delta']['content'] for i in response.text.split('data: ') if i != '' and not '[DONE]' in i and 'content' in json.loads(i)['choices'][0]['delta'].keys()])
 
     print(resp_text)
+    """
