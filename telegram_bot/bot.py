@@ -15,8 +15,6 @@ logging.basicConfig(level=logging.INFO)
 conf = Config()
 bot = Bot(conf.get_value('bot_token'))
 
-USE_PROXY = conf.get_value('enable_proxy')
-
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -33,7 +31,7 @@ async def start(message: types.Message):
     nc.clear_messages()
     nc.add_message('Привет', 'user')
     logging.info('start message')
-    msg = nc.get_responce(use_proxy=USE_PROXY)
+    msg = nc.get_responce()
 
     await message.answer(
             text=msg
@@ -42,11 +40,11 @@ async def start(message: types.Message):
 @dp.message_handler() # Он принимает все запросы без фильтров
 async def error(message: types.Message):
     """
-    Отправляет сообщение об ошибке
+    Отправляет сообщение 
     """
     nc.add_message(message.text, 'user')
     logging.info('start message')
-    msg = nc.get_responce(use_proxy=USE_PROXY)
+    msg = nc.get_responce()
     await message.answer(
             text=msg
         )

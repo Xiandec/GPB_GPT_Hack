@@ -35,7 +35,7 @@ class DeepinfraController(Singleton):
             })
         
 
-    def create_json_data(self, ) -> dict:
+    def _create_json_data(self, ) -> dict:
         """
         Создаёт JSON-данные для запроса
         """
@@ -45,27 +45,56 @@ class DeepinfraController(Singleton):
         request['stream'] = self._stream
         return request
     
-    def get_responce(
+    def _create_headers(self, api_key) -> dict:
+        """
+        Создаёт заголовки для запроса с авторизацией
+        """
+        return {
+            'Authorization': api_key,
+        }
+    
+    def _decode_response(
             self,
-            use_proxy: bool = False,
-            neir_api_key: str = None
-            ) -> str:
+            response: str = None,
+    ) -> str:
+        if response and '[DONE]' in response:
+            return ''.join([json.loads(i)['choices'][0]['delta']['content'] for i in response.split('data: ') if i != '' and not '[DONE]' in i and 'content' in json.loads(i)['choices'][0]['delta'].keys()])
+        return 
+    
+    def get_responce(self, ) -> str:
         """
         Возвращает ответ от нейронной сети
         """
-        if use_proxy:
+        conf = Config()
+        USE_PROXY = conf.get_value('enable_proxy')
+        
+        if USE_PROXY:
             pr = AvalibleProxies()
             proxies = pr.get_available_proxies()
     
             proxies = pr.ip_to_proxy(proxies[0])
-            response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self.create_json_data(), proxies=proxies)
-            try:
-                resp_text = ''.join([json.loads(i)['choices'][0]['delta']['content'] for i in response.text.split('data: ') if i != '' and not '[DONE]' in i and 'content' in json.loads(i)['choices'][0]['delta'].keys()])
-                self.add_message(resp_text, 'assistant')
-                return resp_text
-            except BaseException:
+            response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self._create_json_data(), proxies=proxies)
+            if response.status_code == 200:
+                resp_text = self._decode_response(response.text)
+                if resp_text:
+                    self.add_message(resp_text, 'assistant')
+                    return resp_text
+            else:
                 pr.update_used_proxies(proxies)
-                return 'Ошибка'
+                return None
+        else:
+            API_KEY = conf.get_value('API_token_deepinfra')
+            headers = self._create_headers(API_KEY)
+            json_data = self._create_json_data()
+            response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', headers=headers, json=json_data)
+            if response.status_code == 200:
+                resp_text = self._decode_response(response.text)
+                if resp_text:
+                    self.add_message(resp_text, 'assistant')
+                    return resp_text
+            else:
+                return None
+
 
     def add_message(
             self, 
