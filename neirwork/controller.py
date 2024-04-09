@@ -45,11 +45,15 @@ class DeepinfraController(Singleton):
         request['stream'] = self._stream
         return request
     
-    def get_responce(self, **kwargs) -> str:
+    def get_responce(
+            self,
+            use_proxy: bool = False,
+            neir_api_key: str = None
+            ) -> str:
         """
         Возвращает ответ от нейронной сети
         """
-        if 'proxies' in kwargs.keys() and kwargs['proxies']:
+        if use_proxy:
             pr = AvalibleProxies()
             proxies = pr.get_available_proxies()
     
