@@ -1,12 +1,21 @@
-print('123')
-from neirwork.proxy_controller import AvalibleProxies
-from neirwork.controller import DeepinfraController
 import telegram_bot.bot 
-import requests
-import json
+import logging
+from colorama import init, Fore, Back, Style
+import os
+from neirwork.proxy_controller import AvalibleProxies
+
+init()
 
 if __name__ == '__main__':
-    print('start bot')
-    pr = AvalibleProxies()
-    print('start proxy')
+    os.system('cls||clear')
+    print(Fore.BLUE + """
+████████╗ ██████╗ ██╗  ██╗██╗     ██████╗ 
+╚══██╔══╝██╔════╝ ██║  ██║██║     ██╔══██╗
+   ██║   ██║  ███╗███████║██║     ██████╔╝
+   ██║   ██║   ██║██╔══██║██║     ██╔═══╝ 
+   ██║   ╚██████╔╝██║  ██║███████╗██║     
+   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝     
+Телеграм бот для помощи с выбором курсов | GPB_GPT_Hack
+""")
+    print(Fore.GREEN + 'starting telegram bot...', Style.RESET_ALL)
     telegram_bot.bot.main()

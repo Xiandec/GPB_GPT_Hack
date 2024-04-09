@@ -1,4 +1,6 @@
 from helper.fp import FreeProxy
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class Singleton(object):
     """
@@ -39,17 +41,22 @@ class AvalibleProxies(Singleton):
     def __init__(self, ):
         self._proxies = set()
         self._used_proxies = set()
-        self.update_proxies()
     
     def update_proxies(self, ) -> None:
-        proxy = FreeProxy(https=True).get()
+        logging.info("Find avalible proxies")
+        proxy = FreeProxy(https=True, timeout=1).get()
+        logging.info(f"Proxy: {proxy}")
         while proxy == []:
-            proxy = FreeProxy(https=True).get()
+            logging.info("No avalible proxies, retrying...")
+            proxy = FreeProxy(https=True, timeout=1).get()
+            logging.info(f"Proxy: {proxy}")
         avalible_proxies = [i['https'] for i in proxy]
         self._proxies.update(avalible_proxies)
         return
 
     def get_available_proxies(self, ) -> list:
+        if len(self._proxies - self._used_proxies) == 0:
+            self.update_proxies()
         return list(self._proxies - self._used_proxies)
     
     def update_used_proxies(self, proxy: str) -> None:

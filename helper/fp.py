@@ -25,13 +25,14 @@ class FreeProxy:
     working proxy.
     '''
 
-    def __init__(self, country_id=None, timeout=0.5, rand=False, anonym=False, elite=False, google=None, https=False):
+    def __init__(self, country_id=None, timeout=0.5, rand=False, anonym=False, elite=False, google=None, https=False, only_one = False):
         self.country_id = country_id
         self.timeout = timeout
         self.random = rand
         self.anonym = anonym
         self.elite = elite
         self.google = google
+        self.only_one = only_one
         self.schema = 'https' if https else 'http'
 
     def get_proxy_list(self, repeat):
