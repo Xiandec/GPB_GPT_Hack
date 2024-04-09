@@ -10,6 +10,28 @@ class Singleton(object):
             class_._instance = object.__new__(class_, *args, **kwargs)
         return class_._instance
 
+class Proxy():
+    def __init__(self, ip: str) -> None:
+        self._ip = ip
+        self._uses = 0
+    
+    def get_ip(self) -> dict:
+        """
+        Конвертирует `IP` в словарь для `requests`
+
+        `http://148.251.76.237:1808` -> `{'https': 'http://148.251.76.237:18080'}`
+        """
+        return {
+            'https': self._ip
+        }
+    
+    def get_uses(self) -> int:
+        return self._uses
+
+    def use(self) -> None:
+        self._uses += 1
+        return
+
 class AvalibleProxies(Singleton):
     """
     Class for saving avalible proxies
@@ -20,7 +42,10 @@ class AvalibleProxies(Singleton):
         self.update_proxies()
     
     def update_proxies(self, ) -> None:
-        avalible_proxies = [i['https'] for i in FreeProxy(https=True).get()]
+        proxy = FreeProxy(https=True).get()
+        while proxy == []:
+            proxy = FreeProxy(https=True).get()
+        avalible_proxies = [i['https'] for i in proxy]
         self._proxies.update(avalible_proxies)
         return
 

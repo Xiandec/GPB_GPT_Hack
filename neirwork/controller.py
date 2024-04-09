@@ -3,6 +3,8 @@ from helper.config import Config
 from neirwork.data.system_conf import SYS_MSG
 import json
 
+from neirwork.proxy_controller import AvalibleProxies
+
 class Singleton(object):
     """
     Singleton class
@@ -47,14 +49,18 @@ class DeepinfraController(Singleton):
         """
         Возвращает ответ от нейронной сети
         """
-        if 'proxies' in kwargs.keys():
-            proxies = kwargs['proxies']
+        if 'proxies' in kwargs.keys() and kwargs['proxies']:
+            pr = AvalibleProxies()
+            proxies = pr.get_available_proxies()
+    
+            proxies = pr.ip_to_proxy(proxies[0])
             response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self.create_json_data(), proxies=proxies)
             try:
                 resp_text = ''.join([json.loads(i)['choices'][0]['delta']['content'] for i in response.text.split('data: ') if i != '' and not '[DONE]' in i and 'content' in json.loads(i)['choices'][0]['delta'].keys()])
                 self.add_message(resp_text, 'assistant')
                 return resp_text
             except BaseException:
+                pr.update_used_proxies(proxies)
                 return 'Ошибка'
 
     def add_message(

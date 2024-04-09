@@ -10,7 +10,6 @@ from aiogram.dispatcher import FSMContext
 from helper.config import Config
 
 from neirwork.controller import DeepinfraController
-from neirwork.proxy_controller import AvalibleProxies
 
 logging.basicConfig(level=logging.INFO)
 conf = Config()
@@ -18,7 +17,7 @@ bot = Bot(conf.get_value('bot_token'))
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-pr = AvalibleProxies()
+
 nc = DeepinfraController()
 
 # start reg to bot
@@ -30,13 +29,8 @@ async def start(message: types.Message):
 
     nc.clear_messages()
     nc.add_message('Привет', 'user')
-    proxies = pr.get_available_proxies()
-    while proxies == []:
-        print('another')
-        pr.update_proxies()
-        proxies = pr.get_available_proxies()
-    proxies = pr.ip_to_proxy(proxies[0])
-    msg = nc.get_responce(proxies=proxies)
+    logging.info('start message')
+    msg = nc.get_responce(proxies=True)
 
     await message.answer(
             text=msg
@@ -48,14 +42,8 @@ async def error(message: types.Message):
     Отправляет сообщение об ошибке
     """
     nc.add_message(message.text, 'user')
-    proxies = pr.get_available_proxies()
-    while proxies == []:
-        print('another')
-        pr.update_proxies()
-        proxies = pr.get_available_proxies()
-        print(proxies)
-    proxies = pr.ip_to_proxy(proxies[0])
-    msg = nc.get_responce(proxies=proxies)
+    logging.info('start message')
+    msg = nc.get_responce(proxies=True)
     await message.answer(
             text=msg
         )
