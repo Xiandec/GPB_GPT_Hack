@@ -14,6 +14,9 @@ from neirwork.controller import DeepinfraController
 logging.basicConfig(level=logging.INFO)
 conf = Config()
 bot = Bot(conf.get_value('bot_token'))
+
+USE_PROXY = conf.get_value('enable_proxy')
+
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
@@ -30,7 +33,7 @@ async def start(message: types.Message):
     nc.clear_messages()
     nc.add_message('Привет', 'user')
     logging.info('start message')
-    msg = nc.get_responce(proxies=True)
+    msg = nc.get_responce(use_proxy=USE_PROXY)
 
     await message.answer(
             text=msg
@@ -43,13 +46,14 @@ async def error(message: types.Message):
     """
     nc.add_message(message.text, 'user')
     logging.info('start message')
-    msg = nc.get_responce(proxies=True)
+    msg = nc.get_responce(use_proxy=USE_PROXY)
     await message.answer(
             text=msg
         )
 
 def main() -> None:  
     executor.start_polling(dp, skip_updates=True)
-    
+
+
 if __name__ == '__main__':
     pass
