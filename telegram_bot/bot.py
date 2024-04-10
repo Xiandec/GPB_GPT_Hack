@@ -29,13 +29,7 @@ async def start(message: types.Message):
     """
 
     nc.clear_messages()
-    nc.add_message('Привет', 'user')
-    logging.info('start message')
-    msg = nc.get_responce()
 
-    await message.answer(
-            text=msg
-        )
     
 @dp.message_handler() # Он принимает все запросы без фильтров
 async def error(message: types.Message):
