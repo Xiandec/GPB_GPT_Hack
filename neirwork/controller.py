@@ -2,6 +2,7 @@ import requests
 from helper.config import Config
 from neirwork.data.system_conf import SYS_MSG
 import json
+import re
 
 from neirwork.proxy_controller import AvalibleProxies
 
@@ -23,7 +24,16 @@ class DeepinfraController(Singleton):
         self._model = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
         self._messages = []
         self._stream = True
+        self._assumption = '[Машинное обучение]'
+        self._state = 0
+        self._max_stages = 4
         self._get_system_info()
+
+    def _set_assumption(self, value: str) -> None:
+        self._assumption = value
+
+    def get_assumption(self) -> str:
+        return self._assumption
 
     def _get_system_info(self, ) -> dict:
         """
@@ -67,6 +77,8 @@ class DeepinfraController(Singleton):
         """
         conf = Config()
         USE_PROXY = conf.get_value('enable_proxy')
+        with open('neirwork/data/course.json') as f:
+            courses = json.loads(f.read())
         
         if USE_PROXY:
             pr = AvalibleProxies()
@@ -74,10 +86,22 @@ class DeepinfraController(Singleton):
     
             proxies = pr.ip_to_proxy(proxies[0])
             response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self._create_json_data(), proxies=proxies)
-            if response.status_code == 200:
+            if response.status_code == 200: # Если ответ есть
                 resp_text = self._decode_response(response.text)
                 if resp_text:
+
+                    if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
+                        self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
+                    
+                    elif len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
+                        self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
+
                     self.add_message(resp_text, 'assistant')
+
+                    self._state += 1
+                    if self._state >= self._max_stages: # Вернуть курс, если достигнут лимит сообщений
+                        return self.get_assumption()
+                    
                     return resp_text
             else:
                 pr.update_used_proxies(proxies)
@@ -87,10 +111,22 @@ class DeepinfraController(Singleton):
             headers = self._create_headers(API_KEY)
             json_data = self._create_json_data()
             response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', headers=headers, json=json_data)
-            if response.status_code == 200:
+            if response.status_code == 200: # Если ответ есть
                 resp_text = self._decode_response(response.text)
                 if resp_text:
+
+                    if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
+                        self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
+                    
+                    elif len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
+                        self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
+
                     self.add_message(resp_text, 'assistant')
+
+                    self._state += 1
+                    if self._state >= self._max_stages: # Вернуть курс, если достигнут лимит сообщений
+                        return self.get_assumption()
+                    
                     return resp_text
             else:
                 return None
@@ -125,3 +161,9 @@ class DeepinfraController(Singleton):
         self._messages = []
         self._stream = True
         self._get_system_info()
+
+    def get_messages(self, ) -> str:
+        """
+        Возвращает контекст
+        """
+        return '\n\n'.join([i['content'] for i in self._messages if i['role'] != 'system'])
