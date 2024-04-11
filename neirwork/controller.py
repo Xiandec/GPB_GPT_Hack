@@ -90,10 +90,10 @@ class DeepinfraController(Singleton):
                 resp_text = self._decode_response(response.text)
                 if resp_text:
 
-                    if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
-                        self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
+                    #if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
+                    #    self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
                     
-                    elif len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
+                    if len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
                         self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
 
                     self.add_message(resp_text, 'assistant')
@@ -115,10 +115,10 @@ class DeepinfraController(Singleton):
                 resp_text = self._decode_response(response.text)
                 if resp_text:
 
-                    if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
-                        self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
+                    #if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
+                    #    self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
                     
-                    elif len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
+                    if len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
                         self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
 
                     self.add_message(resp_text, 'assistant')
@@ -160,6 +160,8 @@ class DeepinfraController(Singleton):
         self._model = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
         self._messages = []
         self._stream = True
+        self._assumption = '[Машинное обучение]'
+        self._state = 0
         self._get_system_info()
 
     def get_messages(self, ) -> str:
