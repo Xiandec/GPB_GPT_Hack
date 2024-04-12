@@ -16,7 +16,7 @@ class Singleton(object):
             class_._instance = object.__new__(class_, *args, **kwargs)
         return class_._instance
 
-class DeepinfraController(Singleton):
+class DeepinfraController():
     """
     Контроллер для работы с API Deepinfra
     """
