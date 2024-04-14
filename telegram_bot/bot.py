@@ -34,8 +34,8 @@ async def start(message: types.Message, state: FSMContext):
     logging.info('"/start" update dialog with ' + str(message.from_user.id))
     await dialog_state.repl_msg.set()
     nc = DeepinfraController()
-    nc.clear_messages()
-    await state.update_data(nc=nc)
+    nc.clear_messages() # Очистка контекста
+    await state.update_data(nc=nc) # Обновление данных 
 
 @dp.message_handler() # Он принимает все запросы без фильтров
 async def send_msg(message: types.Message, state: FSMContext):
@@ -45,10 +45,19 @@ async def send_msg(message: types.Message, state: FSMContext):
     logging.info('update dialog with ' + str(message.from_user.id))
     await dialog_state.repl_msg.set()
     nc = DeepinfraController()
-    nc.clear_messages()
+    nc.clear_messages() # Очистка контекста
     nc.add_message(message.text, 'user')
+
+    # Получение сообщения
     msg = nc.get_responce()
-    await state.update_data(nc=nc)
+    cou = 0
+    while msg == None and cou < 5:
+        cou += 1
+        msg = nc.get_responce()
+    if msg == None:
+        msg = '[Ошибка]'
+
+    await state.update_data(nc=nc) # Обновление данных 
     if '[' in msg and ']' in msg:
         await state.finish()
     await message.answer(
@@ -61,12 +70,21 @@ async def send_msg(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение 
     """
-    data = await state.get_data()
+    data = await state.get_data() # Получение экземпляра класса
     nc = data['nc']
     nc.add_message(message.text, 'user')
     logging.info('start message to ' + str(message.from_user.id))
+
+    # Получение сообщения
     msg = nc.get_responce()
-    await state.update_data(nc=nc)
+    cou = 0
+    while msg == None and cou < 5:
+        cou += 1
+        msg = nc.get_responce()
+    if msg == None:
+        msg = '[Ошибка]'
+
+    await state.update_data(nc=nc) # Обновление данных 
     if '[' in msg and ']' in msg:
         await state.finish()
     await message.answer(
@@ -84,25 +102,33 @@ async def send_msg(message: types.Message, state: FSMContext):
         logging.info('"/start" message chanell ' + str(message.chat.full_name))
         await dialog_state.repl_msg.set()
         nc = DeepinfraController()
-        nc.clear_messages()
-        await state.update_data(nc=nc)
+        nc.clear_messages() # Очистка контекста
+        await state.update_data(nc=nc) # Обновление данных 
         
 @dp.channel_post_handler(state=dialog_state.repl_msg) # Он принимает все сообщения в канале для ответа
 async def send_msg(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение в канал
     """
-    data = await state.get_data()
+    data = await state.get_data() # Получение экземпляра класса
     nc = data['nc']
     nc.add_message(message.text, 'user')
     logging.info('message chanell ' + str(message.chat.full_name))
-    if 'Диалог окончен, accuracy =' in message.text:
+    if 'Диалог окончен, accuracy =' in message.text: # Если диалог окончен
         logging.info('stop chanell ' + str(message.chat.full_name))
-        nc.clear_messages()
+        nc.clear_messages() # Очистка контекста
         await state.finish()
-    else:
+    else: # Если диалог продолжается, ответ
+        # Получение сообщения
         msg = nc.get_responce()
-        await state.update_data(nc=nc)
+        cou = 0
+        while msg == None and cou < 5:
+            cou += 1
+            msg = nc.get_responce()
+        if msg == None:
+            msg = '[Ошибка]'
+
+        await state.update_data(nc=nc) # Обновление данных
         if '[' in msg and ']' in msg:
             await state.finish()
         await message.answer(

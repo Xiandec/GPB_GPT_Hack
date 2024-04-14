@@ -85,7 +85,10 @@ class DeepinfraController():
             proxies = pr.get_available_proxies()
     
             proxies = pr.ip_to_proxy(proxies[0])
-            response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self._create_json_data(), proxies=proxies)
+            try:
+                response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', json=self._create_json_data(), proxies=proxies)
+            except BaseException:
+                pr.update_used_proxies(proxies['https'])
             if response.status_code == 200: # Если ответ есть
                 resp_text = self._decode_response(response.text)
                 if resp_text:
@@ -106,7 +109,7 @@ class DeepinfraController():
                     
                     return resp_text
             else:
-                pr.update_used_proxies(proxies)
+                pr.update_used_proxies(proxies['https'])
                 return None
         else:
             API_KEY = conf.get_value('API_token_deepinfra')
