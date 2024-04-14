@@ -93,8 +93,10 @@ class DeepinfraController():
                     #if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
                     #    self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
                     
-                    if len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
-                        self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
+                    list_assumption = [i for i in [course['Course_name'] for course in courses] if i in resp_text] # Поиск курса в ответе
+                    if len(list_assumption) > 0:  # Добавить курс, если он существует
+                        list_assumption = sorted(list_assumption, key=len, reverse=True)
+                        self._set_assumption('[' + list_assumption[0] + ']')
 
                     self.add_message(resp_text, 'assistant')
 
@@ -118,8 +120,10 @@ class DeepinfraController():
                     #if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
                     #    self._set_assumption(re.findall('\\[.*\\]', resp_text)[0])
                     
-                    if len([i for i in [course['Course_name'] for course in courses] if i in resp_text]) > 0:  # Добавить курс, если он существует
-                        self._set_assumption('[' + [i for i in [course['Course_name'] for course in courses] if i in resp_text][0] + ']')
+                    list_assumption = [i for i in [course['Course_name'] for course in courses] if i in resp_text] # Поиск курса в ответе
+                    if len(list_assumption) > 0:  # Добавить курс, если он существует
+                        list_assumption = sorted(list_assumption, key=len, reverse=True)
+                        self._set_assumption('[' + list_assumption[0] + ']')
 
                     self.add_message(resp_text, 'assistant')
 

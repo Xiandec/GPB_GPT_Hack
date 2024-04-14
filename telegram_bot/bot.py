@@ -79,9 +79,9 @@ async def send_msg(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение в канал и используется для старта 
     """
-    logging.info('"/start" message chanell ' + str(message.chat.full_name))
+    logging.info('drop message chanell ' + str(message.chat.full_name))
     if message.text == '/start':
-        logging.info('update chanell')
+        logging.info('"/start" message chanell ' + str(message.chat.full_name))
         await dialog_state.repl_msg.set()
         nc = DeepinfraController()
         nc.clear_messages()
