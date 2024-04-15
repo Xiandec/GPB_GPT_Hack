@@ -21,7 +21,6 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 class dialog_state(StatesGroup):
-    start_dialog = State()
     repl_msg = State()
 
 # ===================================================================
@@ -29,9 +28,21 @@ class dialog_state(StatesGroup):
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message, state: FSMContext):
     """
-    Стартовое сообщение для бота, отправляет первую страницу писем
+    Стартовое сообщение для бота
     """
     logging.info('"/start" update dialog with ' + str(message.from_user.id))
+    await dialog_state.repl_msg.set()
+    nc = DeepinfraController()
+    nc.clear_messages() # Очистка контекста
+    await state.update_data(nc=nc) # Обновление данных 
+
+@dp.message_handler(commands=['start'], state=dialog_state.repl_msg)
+async def start_with_state(message: types.Message, state: FSMContext):
+    """
+    Стартовое сообщение для бота с состоянием
+    """
+    logging.info('"/start" update dialog with ' + str(message.from_user.id))
+    await state.finish()
     await dialog_state.repl_msg.set()
     nc = DeepinfraController()
     nc.clear_messages() # Очистка контекста
@@ -66,7 +77,7 @@ async def send_msg(message: types.Message, state: FSMContext):
 
     
 @dp.message_handler(state=dialog_state.repl_msg) # Он принимает все сообщения и отвечает на них
-async def send_msg(message: types.Message, state: FSMContext):
+async def send_msg_with_state(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение 
     """
@@ -93,7 +104,7 @@ async def send_msg(message: types.Message, state: FSMContext):
     
     
 @dp.channel_post_handler() # Он принимает все запросы без фильтров
-async def send_msg(message: types.Message, state: FSMContext):
+async def send_msg_channel(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение в канал и используется для старта 
     """
@@ -106,7 +117,7 @@ async def send_msg(message: types.Message, state: FSMContext):
         await state.update_data(nc=nc) # Обновление данных 
         
 @dp.channel_post_handler(state=dialog_state.repl_msg) # Он принимает все сообщения в канале для ответа
-async def send_msg(message: types.Message, state: FSMContext):
+async def send_msg_channel_with_state(message: types.Message, state: FSMContext):
     """
     Отправляет сообщение в канал
     """
@@ -118,6 +129,15 @@ async def send_msg(message: types.Message, state: FSMContext):
         logging.info('stop chanell ' + str(message.chat.full_name))
         nc.clear_messages() # Очистка контекста
         await state.finish()
+    
+    elif message.text == '/start':
+        logging.info('"/start" message chanell ' + str(message.chat.full_name))
+        await state.finish()
+        await dialog_state.repl_msg.set()
+        nc = DeepinfraController()
+        nc.clear_messages() # Очистка контекста
+        await state.update_data(nc=nc)
+
     else: # Если диалог продолжается, ответ
         # Получение сообщения
         msg = nc.get_responce()
