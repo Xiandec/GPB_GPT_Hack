@@ -117,7 +117,10 @@ class DeepinfraController():
             json_data = self._create_json_data()
             response = requests.post('https://api.deepinfra.com/v1/openai/chat/completions', headers=headers, json=json_data)
             if response.status_code == 200: # Если ответ есть
-                resp_text = self._decode_response(response.text)
+                try:
+                    resp_text = self._decode_response(response.text.strip())
+                except BaseException:
+                    return None
                 if resp_text:
 
                     #if len(re.findall('\\[.*\\]', resp_text)) > 0: # Добавить курс, если он существует
